@@ -24,11 +24,7 @@ export default function DoctorDashboardLayout({ children }) {
 
   const loading = userLoading || doctorLoading;
 
-  const isActive = (path) => {
-    return pathname === `/doctor/dashboard${path}`
-      ? "bg-blue-100 text-blue-700"
-      : "text-gray-600 hover:bg-blue-50 hover:text-blue-600";
-  };
+
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api/v1", "");
 

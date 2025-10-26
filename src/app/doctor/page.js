@@ -252,7 +252,7 @@ export default function DoctorDashboard() {
             </div>
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
               <Link
-                href="/doctor/dashboard/appointments"
+                href="/doctor/appointments"
                 className="text-sm font-medium text-blue-600 hover:text-blue-800"
               >
                 View all appointments
