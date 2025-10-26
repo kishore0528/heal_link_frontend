@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GoogleLogin } from "@react-oauth/google";
-import { post } from "@/utils/api";
+import { authApi } from "@/utils/api";
 
 export default function Login() {
   const router = useRouter();
@@ -47,48 +47,36 @@ export default function Login() {
         requestBody.twoFactorCode = twoFactorCode;
       }
 
-      const res = await fetch("http://localhost:5000/api/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const data = await authApi.login(requestBody);
 
-      const data = await res.json();
+      // Check if 2FA is required
+      if (data.requiresTwoFactor) {
+        setRequiresTwoFactor(true);
+        setTempUserId(data.tempUserId);
+        setError(""); // Clear any previous errors
+        return;
+      }
 
-      if (res.ok) {
-        // Check if 2FA is required
-        if (data.requiresTwoFactor) {
-          setRequiresTwoFactor(true);
-          setTempUserId(data.tempUserId);
-          setError(""); // Clear any previous errors
-          return;
-        }
+      // Successful login
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
 
-        // Successful login
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role);
-        
-        console.log('Login successful - Role:', data.role);
-        
-        if (data.role === 'admin') {
-          router.push('/admin');
-        } else if (data.role === 'doctor') {
-          router.push('/doctor');
-        } else if (data.role === 'patient') {
-          router.push('/patient/dashboard');
-        } else if (data.role === 'nurse') {
-          router.push('/nurse');
-        } else {
-          router.push('/');
-        }
+      console.log("Login successful - Role:", data.role);
+
+      if (data.role === "admin") {
+        router.push("/admin");
+      } else if (data.role === "doctor") {
+        router.push("/doctor");
+      } else if (data.role === "patient") {
+        router.push("/patient/dashboard");
+      } else if (data.role === "nurse") {
+        router.push("/nurse");
       } else {
-        setError(data.error || "Something went wrong");
+        router.push("/");
       }
     } catch (error) {
       console.error("Login error:", error);
-      setError("An error occurred during login.");
+      setError(error.message || "An error occurred during login.");
     } finally {
       setIsLoading(false);
     }
@@ -343,28 +331,15 @@ export default function Login() {
                         setError("Google sign-in failed: missing credential");
                         return;
                       }
-                      const res = await fetch(
-                        `${
-                          process.env.NEXT_PUBLIC_API_BASE_URL ||
-                          "http://localhost:5000"
-                        }/api/v1/auth/google`,
-                        {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ tokenId }),
-                        }
-                      );
-                      const data = await res.json();
-                      if (!res.ok) {
-                        setError(data.error || "Google sign-in failed");
-                        return;
-                      }
+
+                      const data = await authApi.googleLogin(tokenId);
+
                       localStorage.setItem("token", data.token);
                       localStorage.setItem("role", "patient");
                       // Automatically redirect to patient dashboard for Google sign-in
                       router.push("/patient/dashboard");
                     } catch (e) {
-                      setError("Google sign-in error");
+                      setError(e.message || "Google sign-in error");
                     }
                   }}
                   onError={() => setError("Google sign-in failed")}
