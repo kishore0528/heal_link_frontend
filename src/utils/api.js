@@ -1,3 +1,4 @@
+console.log("API Base URL from env:", process.env.NEXT_PUBLIC_API_BASE_URL);
 const API_BASE_URL =process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 // Helper function to get auth headers
