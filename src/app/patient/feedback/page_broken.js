@@ -10,10 +10,10 @@ import {
   Legend,
 } from 'chart.js';
 
+import { get, post } from '@/utils/api';
+
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 export default function FeedbackPage() {
   const router = useRouter();
@@ -35,23 +35,8 @@ export default function FeedbackPage() {
   // Fetch completed appointments
   const fetchCompletedAppointments = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/feedback/patient/appointments`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCompletedAppointments(data.data || []);
-      } else if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        router.push('/login');
-      } else {
-        console.error("Failed to fetch completed appointments");
-      }
+      const data = await get("/feedback/patient/appointments");
+      setCompletedAppointments(data.data || []);
     } catch (error) {
       console.error("Error fetching completed appointments:", error);
       setError("Failed to load completed appointments");
@@ -61,21 +46,8 @@ export default function FeedbackPage() {
   // Fetch submitted feedback history
   const fetchFeedbackHistory = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/feedback/patient/history`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSubmittedFeedbacks(data.data || []);
-      } else if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
-        router.push('/login');
-      }
+      const data = await get("/feedback/patient/history");
+      setSubmittedFeedbacks(data.data || []);
     } catch (error) {
       console.error("Error fetching feedback history:", error);
     }
@@ -106,39 +78,26 @@ export default function FeedbackPage() {
     e.preventDefault();
     
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/feedback`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          appointment: selectedAppointment._id,
-          appointmentType: selectedAppointment.appointmentType || "consultation",
-          feedbackType: feedbackForm.feedbackType,
-          rating: feedbackForm.rating,
-          comment: feedbackForm.comment,
-        }),
+      await post("/feedback", {
+        appointment: selectedAppointment._id,
+        appointmentType: selectedAppointment.appointmentType || "consultation",
+        feedbackType: feedbackForm.feedbackType,
+        rating: feedbackForm.rating,
+        comment: feedbackForm.comment,
       });
 
-      if (response.ok) {
-        setShowFeedbackModal(false);
-        setFeedbackForm({ rating: 5, feedbackType: "compliment", comment: "" });
-        setSelectedAppointment(null);
-        setShowSuccessPopup(true);
-        
-        // Auto-hide success popup after 3 seconds
-        setTimeout(() => {
-          setShowSuccessPopup(false);
-        }, 3000);
-        
-        fetchCompletedAppointments();
-        fetchFeedbackHistory();
-      } else {
-        const errorData = await response.json();
-        alert(errorData.error || "Failed to submit feedback");
-      }
+      setShowFeedbackModal(false);
+      setFeedbackForm({ rating: 5, feedbackType: "compliment", comment: "" });
+      setSelectedAppointment(null);
+      setShowSuccessPopup(true);
+      
+      // Auto-hide success popup after 3 seconds
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 3000);
+      
+      fetchCompletedAppointments();
+      fetchFeedbackHistory();
     } catch (error) {
       console.error("Error submitting feedback:", error);
       alert("Failed to submit feedback");

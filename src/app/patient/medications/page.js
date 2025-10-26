@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import usePatient from "@/hooks/usePatient";
-// import { get } from "@/utils/api";
+import { get, post } from "@/utils/api";
 
 export default function MedicationsPage() {
   const router = useRouter();
@@ -40,22 +40,8 @@ export default function MedicationsPage() {
 
       try {
         // Fetch real medications from API
-        const response = await fetch("http://localhost:5000/api/v1/medications/my", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          setMedications(result.data || []);
-        } else {
-          console.error("Failed to fetch medications");
-          // Fallback to empty array if API fails
-          setMedications([]);
-        }
+        const result = await get("/medications/my");
+        setMedications(result.data || []);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching medications:", error);
@@ -198,52 +184,39 @@ export default function MedicationsPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/medications/my", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(medicationForm),
-      });
+      const result = await post("/medications/my", medicationForm);
 
-      if (response.ok) {
-        const result = await response.json();
-        // Add the new medication to the list
-        setMedications(prev => [result.data, ...prev]);
-        
-        // Reset form and close modal
-        setMedicationForm({
-          name: "",
-          dosage: "",
-          frequency: "",
-          startDate: "",
-          endDate: "",
-          instructions: "",
-          notes: "",
-          reminders: {
-            enabled: true,
-            times: ["08:00"]
-          }
-        });
-        setShowAddMedicationModal(false);
-        
-        // Show success popup
-        setShowSuccessPopup(true);
-        
-        // Dispatch event to notify dashboard of medication change
-        window.dispatchEvent(new CustomEvent('medicationAdded', {
-          detail: { medication: result.data }
-        }));
-        
-        // Auto-hide success popup after 4 seconds
-        setTimeout(() => {
-          setShowSuccessPopup(false);
-        }, 4000);
-      } else {
-        const error = await response.json();
-        alert("Failed to add medication: " + error.error);
-      }
+      // Add the new medication to the list
+      setMedications(prev => [result.data, ...prev]);
+      
+      // Reset form and close modal
+      setMedicationForm({
+        name: "",
+        dosage: "",
+        frequency: "",
+        startDate: "",
+        endDate: "",
+        instructions: "",
+        notes: "",
+        reminders: {
+          enabled: true,
+          times: ["08:00"]
+        }
+      });
+      setShowAddMedicationModal(false);
+      
+      // Show success popup
+      setShowSuccessPopup(true);
+      
+      // Dispatch event to notify dashboard of medication change
+      window.dispatchEvent(new CustomEvent('medicationAdded', {
+        detail: { medication: result.data }
+      }));
+      
+      // Auto-hide success popup after 4 seconds
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+      }, 4000);
     } catch (error) {
       console.error("Error adding medication:", error);
       alert("Error adding medication. Please try again.");

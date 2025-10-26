@@ -16,6 +16,7 @@ export default function ViewProfile() {
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api/v1", "");
   
 
 
@@ -371,7 +372,7 @@ export default function ViewProfile() {
                   <img src={imagePreview} alt="Profile" className="w-full h-full object-cover" />
                 ) : patient?.user?.profilePicture ? (
                   <img 
-                    src={`http://localhost:5000/${patient.user.profilePicture}`} 
+                    src={`${API_BASE}/${patient.user.profilePicture}`} 
                     alt="Profile" 
                     className="w-full h-full object-cover" 
                     onError={(e) => {

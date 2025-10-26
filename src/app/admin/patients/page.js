@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { get } from '@/utils/api';
 
 export default function PatientManagement() {
   const router = useRouter();
@@ -34,13 +35,7 @@ export default function PatientManagement() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/v1/patients/admin/patients');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch patients');
-      }
-      
-      const data = await response.json();
+      const data = await get('/patients/admin/patients');
       const patientsList = data.data || [];
       setPatients(patientsList);
       setError(null);

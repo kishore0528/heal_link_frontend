@@ -30,6 +30,7 @@ export default function DoctorProfilePage() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [activeTab, setActiveTab] = useState("overview");
   const fileInputRef = useRef(null);
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api/v1", "");
 
   useEffect(() => {
     if (doctor) {
@@ -135,7 +136,7 @@ export default function DoctorProfilePage() {
               <div className="relative">
                 <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-2xl font-bold mr-6 overflow-hidden ring-4 ring-white ring-opacity-50 shadow-lg">
                   <img
-                    src={doctor?.user?.profilePicture ? `http://localhost:5000/${doctor.user.profilePicture}` : "/default-avatar.png"}
+                    src={doctor?.user?.profilePicture ? `${API_BASE}/${doctor.user.profilePicture}` : "/default-avatar.png"}
                     alt="Profile Photo"
                     className="w-full h-full object-cover"
                   />

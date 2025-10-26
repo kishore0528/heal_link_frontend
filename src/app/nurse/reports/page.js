@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+import { get, post } from '@/utils/api';
 
 export default function NurseReports() {
   const router = useRouter();
@@ -43,21 +42,9 @@ export default function NurseReports() {
       if (filters.status) queryParams.append('status', filters.status);
       if (filters.recordType) queryParams.append('recordType', filters.recordType);
 
-      const response = await fetch(`${API_BASE_URL}/nurse/reports?${queryParams}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const data = await get(`/nurse/reports?${queryParams}`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setReports(data.data || []);
-      } else {
-        console.error("Failed to fetch reports");
-        setReports([]);
-      }
+      setReports(data.data || []);
     } catch (error) {
       console.error("Error fetching reports:", error);
       setReports([]);
@@ -66,18 +53,8 @@ export default function NurseReports() {
 
   const fetchPatients = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/nurse/patients/all`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPatients(data.data || []);
-      }
+      const data = await get("/nurse/patients/all");
+      setPatients(data.data || []);
     } catch (error) {
       console.error("Error fetching patients:", error);
     } finally {
@@ -87,18 +64,8 @@ export default function NurseReports() {
 
   const fetchDoctors = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/doctors`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setDoctors(data.data || []);
-      }
+      const data = await get("/doctors");
+      setDoctors(data.data || []);
     } catch (error) {
       console.error("Error fetching doctors:", error);
     }
@@ -108,33 +75,19 @@ export default function NurseReports() {
     e.preventDefault();
     
     try {
-      const response = await fetch(`${API_BASE_URL}/nurse/reports`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(formData),
+      const data = await post("/nurse/reports", formData);
+      setReports(prev => [data.data, ...prev]);
+      setShowAddModal(false);
+      setFormData({
+        patient: '',
+        doctor: '',
+        title: '',
+        recordType: 'Lab',
+        description: '',
+        notes: '',
+        fileUrl: ''
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setReports(prev => [data.data, ...prev]);
-        setShowAddModal(false);
-        setFormData({
-          patient: '',
-          doctor: '',
-          title: '',
-          recordType: 'Lab',
-          description: '',
-          notes: '',
-          fileUrl: ''
-        });
-        alert('Report added successfully!');
-      } else {
-        const errorData = await response.json();
-        alert(`Failed to add report: ${errorData.error}`);
-      }
+      alert('Report added successfully!');
     } catch (error) {
       console.error("Error adding report:", error);
       alert('Error adding report. Please try again.');

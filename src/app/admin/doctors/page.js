@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+import { get, post, put, del } from '@/utils/api';
 
 // Add custom styles for animations
 const styles = `
@@ -91,26 +90,7 @@ export default function DoctorManagement() {
     try {
       setLoading(true);
       
-      // Add timeout to the fetch request
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      const response = await fetch(`${API_BASE_URL}/doctors`, {
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        if (response.status >= 500) {
-          throw new Error(`Server error (${response.status}): The backend server may be experiencing issues`);
-        } else if (response.status >= 400) {
-          throw new Error(`Request error (${response.status}): ${response.statusText}`);
-        }
-        throw new Error(`Failed to fetch doctors: ${response.status} ${response.statusText}`);
-      }
-      
-      const result = await response.json();
+      const result = await get('/doctors');
       
       // Only set doctors from database, ensure it's an array
       if (result.success && Array.isArray(result.data)) {
@@ -197,19 +177,7 @@ export default function DoctorManagement() {
       console.log('Submitting doctor form with data:', formData);
       
       // Send data directly to backend API without authentication
-      const response = await fetch(`${API_BASE_URL}/doctors`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to add doctor');
-      }
+      const result = await post('/doctors', formData);
       
       console.log('Doctor added successfully:', result);
       
@@ -355,19 +323,7 @@ export default function DoctorManagement() {
     try {
       setLoading(true);
       
-      const response = await fetch(`${API_BASE_URL}/doctors/${doctorId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData)
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to update doctor');
-      }
+      await put(`/doctors/${doctorId}`, updateData);
 
       showToast('Doctor updated successfully!', 'info');
       
@@ -411,15 +367,7 @@ export default function DoctorManagement() {
     try {
       setLoading(true);
       
-      const response = await fetch(`${API_BASE_URL}/doctors/${doctorId}`, {
-        method: 'DELETE'
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete doctor');
-      }
+      await del(`/doctors/${doctorId}`);
 
       showToast('Doctor deleted successfully!', 'error');
       

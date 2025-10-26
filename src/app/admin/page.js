@@ -3,8 +3,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+import { get } from '@/utils/api';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -23,86 +22,12 @@ export default function AdminDashboard() {
       setLoading(true);
       setError(null);
       
-      // Get auth token
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No authentication token found');
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
-      
-      // Test backend connection first
-      console.log('Attempting to connect to backend at:', API_BASE_URL);
-      
-      // Fetch real data from backend APIs with individual error handling
-      const apiCalls = [
-        { url: `${API_BASE_URL}/doctors`, name: 'doctors' },
-        { url: `${API_BASE_URL}/patients/admin/patients`, name: 'patients' },
-        { url: `${API_BASE_URL}/appointments`, name: 'appointments' },
-        { url: `${API_BASE_URL}/feedback`, name: 'feedback' }
-      ];
-
-      const results = await Promise.allSettled(
-        apiCalls.map(async ({ url, name }) => {
-          try {
-            console.log(`Fetching ${name} from:`, url);
-            const response = await fetch(url, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-            });
-            
-            if (!response.ok) {
-              console.warn(`${name} API failed:`, response.status, response.statusText);
-              return { success: false, name, data: null, error: `HTTP ${response.status}` };
-            }
-            
-            const data = await response.json();
-            console.log(`${name} API response:`, data);
-            return { success: true, name, data };
-          } catch (error) {
-            console.warn(`${name} API error:`, error.message);
-            return { success: false, name, data: null, error: error.message };
-          }
-        })
-      );
-
-      // Process results and extract real data
-      let doctorsData = null;
-      let patientsData = null;
-      let appointmentsData = null;
-      let feedbackData = null;
-      let hasErrors = false;
-
-      results.forEach((result, index) => {
-        if (result.status === 'fulfilled' && result.value && result.value.success) {
-          const resultData = result.value;
-          switch (resultData.name) {
-            case 'doctors':
-              doctorsData = resultData.data;
-              break;
-            case 'patients':
-              patientsData = resultData.data;
-              break;
-            case 'appointments':
-              appointmentsData = resultData.data;
-              break;
-            case 'feedback':
-              feedbackData = resultData.data;
-              break;
-          }
-        } else {
-          hasErrors = true;
-          const apiName = apiCalls[index]?.name || 'unknown';
-          const errorMsg = result.status === 'fulfilled' 
-            ? result.value?.error 
-            : result.reason?.message || 'Unknown error';
-          console.error(`Failed to fetch ${apiName}:`, errorMsg);
-        }
-      });
+      const [doctorsData, patientsData, appointmentsData, feedbackData] = await Promise.all([
+        get('/doctors'),
+        get('/patients/admin/patients'),
+        get('/appointments'),
+        get('/feedback')
+      ]);
 
       // Calculate today's appointments if data is available
       let todayAppointments = 0;
@@ -125,17 +50,12 @@ export default function AdminDashboard() {
       console.log('Final stats:', stats);
       setStats(stats);
 
-      if (hasErrors) {
-        setError('Some data could not be loaded from backend. Showing available data.');
-        setTimeout(() => setError(null), 5000); // Auto-clear error after 5 seconds
-      }
-
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
       let errorMessage = 'Unable to connect to backend server.';
       
       if (error.message.includes('fetch')) {
-        errorMessage = 'Backend server is not responding. Please check if it\'s running on port 5000.';
+        errorMessage = 'Backend server is not responding. Please check if it\\\'s running on port 5000.';
       } else if (error.message.includes('CORS')) {
         errorMessage = 'CORS error: Backend server configuration issue.';
       }

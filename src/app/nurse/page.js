@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+import { get } from '@/utils/api';
 
 export default function NurseDashboard() {
   const router = useRouter();
@@ -24,35 +23,18 @@ export default function NurseDashboard() {
           return;
         }
 
-        // Fetch nurse info
-        const nurseResponse = await fetch(`${API_BASE_URL}/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        // Fetch nurse info and dashboard data in parallel
+        const [nurseData, dashboardData] = await Promise.all([
+          get('/auth/me'),
+          get('/nurse/dashboard-data')
+        ]);
 
-        if (nurseResponse.ok) {
-          const nurseData = await nurseResponse.json();
-          if (nurseData.data && nurseData.data.role === 'nurse') {
-            setNurse(nurseData.data);
-          }
+        if (nurseData.data && nurseData.data.role === 'nurse') {
+          setNurse(nurseData.data);
         }
 
-        // Fetch dashboard data
-        const dashboardResponse = await fetch(`${API_BASE_URL}/nurse/dashboard-data`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+        setDashboardData(dashboardData.data);
 
-        if (dashboardResponse.ok) {
-          const data = await dashboardResponse.json();
-          setDashboardData(data.data);
-        } else {
-          throw new Error('Failed to fetch dashboard data');
-        }
       } catch (err) {
         console.error('Error fetching data:', err);
         setError(err.message);

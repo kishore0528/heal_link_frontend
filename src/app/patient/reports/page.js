@@ -24,6 +24,7 @@ export default function ReportsPage() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api/v1", "");
   
   // Form states
   const [formData, setFormData] = useState({
@@ -402,7 +403,7 @@ export default function ReportsPage() {
                   <div className="flex items-center space-x-2">
                     {report.fileUrl && (
                       <a
-                        href={`http://localhost:5000${report.fileUrl}`}
+                        href={`${API_BASE}${report.fileUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50"

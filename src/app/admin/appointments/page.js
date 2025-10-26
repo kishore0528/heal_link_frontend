@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+import { get, put, post } from '@/utils/api';
 
 export default function AppointmentManagement() {
   const [appointments, setAppointments] = useState([]);
@@ -18,13 +17,7 @@ export default function AppointmentManagement() {
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/appointments`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch appointments');
-      }
-      
-      const result = await response.json();
+      const result = await get('/appointments');
       setAppointments(result.data || []);
       setError(null);
     } catch (err) {
@@ -104,19 +97,7 @@ export default function AppointmentManagement() {
   // Handle update appointment
   const handleUpdateAppointment = async (appointmentId, updateData) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update appointment');
-      }
-
-      const result = await response.json();
+      await put(`/appointments/${appointmentId}`, updateData);
       
       // Refresh appointments to get latest data with proper population
       await fetchAppointments();
@@ -173,31 +154,7 @@ export default function AppointmentManagement() {
       
       console.log('Sending update data:', updateData);
       
-      const response = await fetch(`${API_BASE_URL}/appointments/${appointmentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData)
-      });
-
-      let result = null;
-      try {
-        result = await response.json();
-        console.log('API response:', { status: response.status, result });
-      } catch (jsonError) {
-        console.error('Failed to parse response as JSON:', jsonError);
-        result = null;
-      }
-
-      if (!response.ok) {
-        const errorMessage = result?.error || result?.message || `HTTP ${response.status}: Failed to reschedule appointment`;
-        throw new Error(errorMessage);
-      }
-
-      if (!result) {
-        throw new Error('Invalid response format from server');
-      }
+      const result = await put(`/appointments/${appointmentId}`, updateData);
       
       // Send notification to patient (don't let this block the reschedule)
       try {
@@ -292,20 +249,9 @@ export default function AppointmentManagement() {
 
       console.log('Sending notification:', notificationData);
 
-      const notificationResponse = await fetch(`${API_BASE_URL}/notifications`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(notificationData)
-      });
+      await post('/notifications', notificationData);
 
-      if (!notificationResponse.ok) {
-        const errorData = await notificationResponse.json();
-        console.warn('Failed to send notification to patient:', errorData);
-      } else {
-        console.log('Reschedule notification sent to patient successfully');
-      }
+      console.log('Reschedule notification sent to patient successfully');
     } catch (err) {
       console.warn('Error sending notification (non-critical):', err);
       // Don't throw error - notification failure shouldn't block reschedule
@@ -595,8 +541,7 @@ function AppointmentDetailsModal({ appointment, onClose, onReschedule }) {
   const fetchDoctors = async () => {
     try {
       setLoadingDoctors(true);
-      const response = await fetch(`${API_BASE_URL}/doctors`);
-      const data = await response.json();
+      const data = await get('/doctors');
       if (data.success) {
         setDoctors(data.data);
         // Set current doctor as default selection
@@ -878,7 +823,7 @@ function RescheduleModal({ appointment, onClose, onConfirm }) {
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+
   
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -911,8 +856,7 @@ function RescheduleModal({ appointment, onClose, onConfirm }) {
   const fetchDoctors = async () => {
     try {
       setLoadingDoctors(true);
-      const response = await fetch(`${API_BASE_URL}/doctors`);
-      const data = await response.json();
+      const data = await get('/doctors');
       if (data.success) {
         setDoctors(data.data);
       }

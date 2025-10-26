@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+import { get } from '@/utils/api';
 
 export default function NurseAppointments() {
   const router = useRouter();
@@ -28,21 +27,9 @@ export default function NurseAppointments() {
       if (filters.date) queryParams.append('date', filters.date);
       if (filters.search) queryParams.append('search', filters.search);
 
-      const response = await fetch(`${API_BASE_URL}/nurse/appointments/all?${queryParams}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const data = await get(`/nurse/appointments/all?${queryParams}`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setAppointments(data.data || []);
-      } else {
-        console.error("Failed to fetch appointments");
-        setAppointments([]);
-      }
+      setAppointments(data.data || []);
     } catch (error) {
       console.error("Error fetching appointments:", error);
       setAppointments([]);

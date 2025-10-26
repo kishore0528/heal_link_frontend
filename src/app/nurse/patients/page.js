@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+import { get } from '@/utils/api';
 
 export default function NursePatients() {
   const router = useRouter();
@@ -36,21 +35,8 @@ export default function NursePatients() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/nurse/patients/all`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPatients(data.data || []);
-      } else {
-        console.error("Failed to fetch patients");
-        setPatients([]);
-      }
+      const data = await get("/nurse/patients/all");
+      setPatients(data.data || []);
     } catch (error) {
       console.error("Error fetching patients:", error);
       setPatients([]);
@@ -66,21 +52,9 @@ export default function NursePatients() {
       
       if (searchTerm) queryParams.append('search', searchTerm);
 
-      const response = await fetch(`${API_BASE_URL}/nurse/patients/all?${queryParams}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const data = await get(`/nurse/patients/all?${queryParams}`);
 
-      if (response.ok) {
-        const data = await response.json();
-        setPatients(data.data || []);
-      } else {
-        console.error("Failed to fetch patients");
-        setPatients([]);
-      }
+      setPatients(data.data || []);
     } catch (error) {
       console.error("Error fetching patients:", error);
       setPatients([]);
@@ -92,24 +66,8 @@ export default function NursePatients() {
   const fetchPatientReports = async (patientId) => {
     try {
       setReportsLoading(true);
-      const response = await fetch(`${API_BASE_URL}/nurse/patients/${patientId}/reports`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPatientReports(data.data || []);
-      } else if (response.status === 404) {
-        // Reports endpoint might not exist, set empty array
-        setPatientReports([]);
-      } else {
-        console.error("Failed to fetch patient reports");
-        setPatientReports([]);
-      }
+      const data = await get(`/nurse/patients/${patientId}/reports`);
+      setPatientReports(data.data || []);
     } catch (error) {
       console.error("Error fetching patient reports:", error);
       // If API endpoint doesn't exist, don't show error to user

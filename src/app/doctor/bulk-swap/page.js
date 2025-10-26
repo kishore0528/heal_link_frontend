@@ -146,31 +146,19 @@ export default function BulkSwapPage() {
           !Array.isArray(data?.doctors));
 
       if (!primaryWorked || noUsableData) {
-        const token =
-          typeof window !== "undefined" ? localStorage.getItem("token") : null;
-        const headers = {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        };
-
-        const base =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
         const endpoints = [
-          `${base}/doctors/available?${queryString}`,
-          `${base}/doctors/availability?${queryString}`,
-          `${base}/doctor/available?${queryString}`,
-          `${base}/doctors/find-available?${queryString}`,
+          `/doctors/available?${queryString}`,
+          `/doctors/availability?${queryString}`,
+          `/doctor/available?${queryString}`,
+          `/doctors/find-available?${queryString}`,
         ];
 
         let ok = false;
         for (const url of endpoints) {
           try {
-            const res = await fetch(url, { headers });
-            if (res.ok) {
-              data = await res.json();
-              ok = true;
-              break;
-            }
+            data = await get(url);
+            ok = true;
+            break;
           } catch {
             // continue to next endpoint
           }
@@ -195,10 +183,7 @@ export default function BulkSwapPage() {
             }
           }
           if (!allDoctors) {
-            const res = await fetch(`${base}/doctors`, { headers });
-            if (!res.ok)
-              throw new Error(`Failed to list doctors (HTTP ${res.status})`);
-            allDoctors = await res.json();
+            allDoctors = await get('/doctors');
           }
           const normalized = normalizeDoctors(allDoctors);
           const filtered = clientFilterAvailableDoctors(normalized);

@@ -30,6 +30,8 @@ export default function DoctorDashboardLayout({ children }) {
       : "text-gray-600 hover:bg-blue-50 hover:text-blue-600";
   };
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/api/v1", "");
+
   const navItems = [
     { name: 'Dashboard', path: '/doctor', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
     { name: 'Appointments', path: '/doctor/appointments', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
@@ -169,7 +171,7 @@ export default function DoctorDashboardLayout({ children }) {
                       <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white flex items-center justify-center shadow-md overflow-hidden">
                         {user?.profilePicture ? (
                           <img
-                            src={`http://localhost:5000/${user.profilePicture}`}
+                            src={`${API_BASE}/${user.profilePicture}`}
                             alt="Profile"
                             className="w-full h-full object-cover"
                           />
@@ -192,7 +194,7 @@ export default function DoctorDashboardLayout({ children }) {
                           <div className="h-16 w-16 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center text-xl font-bold shadow-md flex-shrink-0 overflow-hidden">
                             {user?.profilePicture ? (
                               <img
-                                src={`http://localhost:5000/${user.profilePicture}`}
+                                src={`${API_BASE}/${user.profilePicture}`}
                                 alt="Profile"
                                 className="w-full h-full object-cover"
                               />

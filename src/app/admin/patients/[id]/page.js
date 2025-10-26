@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { get, put } from '@/utils/api';
 
 export default function PatientDetailPage() {
   const params = useParams();
@@ -100,31 +101,19 @@ export default function PatientDetailPage() {
     try {
       setIsSaving(true);
       
-      const response = await fetch(`http://localhost:5000/api/v1/patients/admin/patients/${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          firstName: editFormData.firstName,
-          lastName: editFormData.lastName,
-          email: editFormData.email,
-          phone: editFormData.phone,
-          dateOfBirth: editFormData.dateOfBirth,
-          bloodType: editFormData.bloodType,
-          address: editFormData.address,
-          emergencyContact: editFormData.emergencyContact,
-          medicalHistory: editFormData.medicalHistory,
-          profilePicture: editFormData.profilePicture
-        })
+      const result = await put(`/patients/admin/patients/${params.id}`, {
+        firstName: editFormData.firstName,
+        lastName: editFormData.lastName,
+        email: editFormData.email,
+        phone: editFormData.phone,
+        dateOfBirth: editFormData.dateOfBirth,
+        bloodType: editFormData.bloodType,
+        address: editFormData.address,
+        emergencyContact: editFormData.emergencyContact,
+        medicalHistory: editFormData.medicalHistory,
+        profilePicture: editFormData.profilePicture
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update patient');
-      }
-
-      const result = await response.json();
-      
       // Update local patient data
       setPatient(result.data);
       setIsEditModalOpen(false);
@@ -147,13 +136,7 @@ export default function PatientDetailPage() {
   const fetchPatientDetails = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/v1/patients/admin/patients/${params.id}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch patient details');
-      }
-      
-      const data = await response.json();
+      const data = await get(`/patients/admin/patients/${params.id}`);
       setPatient(data.data);
       setError(null);
     } catch (err) {
