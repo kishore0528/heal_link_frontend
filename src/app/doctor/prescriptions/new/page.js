@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { patientApi, medicationApi } from '@/utils/api';
 
 export default function NewPrescription() {
   const router = useRouter();
@@ -19,9 +18,18 @@ export default function NewPrescription() {
 
   useEffect(() => {
     const fetchPatients = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
       try {
-        const data = await patientApi.getPatients();
-        if (data.success) {
+        const res = await fetch('http://localhost:5000/api/v1/patients', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (res.ok) {
           setPatients(data.data || []);
         } else {
           console.error('Failed to fetch patients');
@@ -34,7 +42,7 @@ export default function NewPrescription() {
     };
 
     fetchPatients();
-  }, []);
+  }, [router]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -47,25 +55,25 @@ export default function NewPrescription() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    const token = localStorage.getItem('token');
 
     try {
-      // Direct API call to create prescription
-      const response = await fetch('/api/v1/prescriptions', {
+      const res = await fetch('http://localhost:5000/api/v1/prescriptions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      const data = await res.json();
 
-      if (response.ok && result.success) {
+      if (res.ok) {
         alert('Prescription created successfully!');
-        router.push('/doctor/prescriptions');
+        router.push('/doctor/dashboard/prescriptions');
       } else {
-        alert(result.error || 'Something went wrong');
+        alert(data.error || 'Something went wrong');
       }
     } catch (error) {
       console.error('Error creating prescription:', error);

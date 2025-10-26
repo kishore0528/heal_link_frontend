@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { get, put } from "@/utils/api";
-import useUser from "@/hooks/useUser";
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { get, put } from '@/utils/api';
+import useUser from '../../../../../../hooks/useUser';
 
 export default function EditAppointment() {
   const router = useRouter();
@@ -11,9 +11,9 @@ export default function EditAppointment() {
   const { id } = params;
   const { user } = useUser();
   const [formData, setFormData] = useState({
-    patient: "",
-    date: "",
-    status: "pending",
+    patient: '',
+    date: '',
+    status: 'pending',
   });
   const [patients, setPatients] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,10 +31,10 @@ export default function EditAppointment() {
             status: appointment.status,
           });
         } else {
-          console.error("Failed to fetch appointment");
+          console.error('Failed to fetch appointment');
         }
       } catch (error) {
-        console.error("Error fetching appointment:", error);
+        console.error('Error fetching appointment:', error);
       } finally {
         setIsFetching(false);
       }
@@ -42,14 +42,14 @@ export default function EditAppointment() {
 
     const fetchPatients = async () => {
       try {
-        const data = await get("/api/v1/patients");
+        const data = await get('/api/v1/patients');
         if (data.success) {
           setPatients(data.data || []);
         } else {
-          console.error("Failed to fetch patients");
+          console.error('Failed to fetch patients');
         }
       } catch (error) {
-        console.error("Error fetching patients:", error);
+        console.error('Error fetching patients:', error);
       }
     };
 
@@ -78,14 +78,14 @@ export default function EditAppointment() {
       });
 
       if (response.success) {
-        alert("Appointment updated successfully!");
-        router.push("/doctor/appointments");
+        alert('Appointment updated successfully!');
+        router.push('/doctor/dashboard/appointments');
       } else {
-        alert(response.error || "Something went wrong");
+        alert(response.error || 'Something went wrong');
       }
     } catch (error) {
-      console.error("Error updating appointment:", error);
-      alert("An error occurred while updating the appointment.");
+      console.error('Error updating appointment:', error);
+      alert('An error occurred while updating the appointment.');
     } finally {
       setIsLoading(false);
     }
@@ -105,10 +105,7 @@ export default function EditAppointment() {
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label
-              htmlFor="patient"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="patient" className="block text-sm font-medium text-gray-700 mb-2">
               Patient
             </label>
             <select
@@ -119,9 +116,7 @@ export default function EditAppointment() {
               required
               className="w-full pl-3 pr-8 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             >
-              <option value="" disabled>
-                Select a patient
-              </option>
+              <option value="" disabled>Select a patient</option>
               {patients.map((p) => (
                 <option key={p._id} value={p.user._id}>
                   {p.user.firstName} {p.user.lastName}
@@ -130,10 +125,7 @@ export default function EditAppointment() {
             </select>
           </div>
           <div>
-            <label
-              htmlFor="date"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
               Date and Time
             </label>
             <input
@@ -147,10 +139,7 @@ export default function EditAppointment() {
             />
           </div>
           <div>
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
               Status
             </label>
             <select
@@ -172,7 +161,7 @@ export default function EditAppointment() {
               disabled={isLoading}
               className="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all duration-200"
             >
-              {isLoading ? "Updating..." : "Update Appointment"}
+              {isLoading ? 'Updating...' : 'Update Appointment'}
             </button>
           </div>
         </form>

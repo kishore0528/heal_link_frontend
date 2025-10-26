@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { patientApi, appointmentApi } from "@/utils/api";
-import useUser from "@/hooks/useUser";
+import useUser from "../../../../hooks/useUser";
 
 export default function NewAppointment() {
   const router = useRouter();
@@ -70,12 +70,10 @@ export default function NewAppointment() {
 
       if (response.success) {
         // Dispatch custom event to notify other components
-        window.dispatchEvent(
-          new CustomEvent("appointmentBooked", {
-            detail: response.data,
-          })
-        );
-
+        window.dispatchEvent(new CustomEvent('appointmentBooked', { 
+          detail: response.data 
+        }));
+        
         alert("Appointment created successfully!");
         router.push("/doctor/appointments");
       } else {
