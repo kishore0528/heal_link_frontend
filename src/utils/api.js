@@ -1,5 +1,4 @@
-console.log("API Base URL from env:", process.env.NEXT_PUBLIC_API_BASE_URL);
-const API_BASE_URL =process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 // Helper function to get auth headers
 const getAuthHeaders = (isFormData = false) => {
@@ -419,9 +418,7 @@ export const reportsApi = {
     // For file uploads, we need to use fetch directly with FormData
     const token = localStorage.getItem("token");
     return fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"
-      }/records/patient/upload`,
+      `${API_BASE_URL}/records/patient/upload`,
       {
         method: "POST",
         headers: {
@@ -467,9 +464,7 @@ export const reportsApi = {
   downloadReport: (id) => {
     const token = localStorage.getItem("token");
     return fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"
-      }/records/${id}/download`,
+      `${API_BASE_URL}/records/${id}/download`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
