@@ -2,8 +2,6 @@
 
 **Heal Link Frontend** is the web frontend of the *Heal Link* application — a healthcare-oriented platform built with **Next.js** and **Tailwind CSS**. This project provides a responsive user interface for users to access features related to healthcare services.
 
-Live Demo: https://heal-link-frontend.vercel.app/ :contentReference[oaicite:1]{index=1}
-
 ---
 
 ## 🚀 About
